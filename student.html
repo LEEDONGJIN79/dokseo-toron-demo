@@ -1053,13 +1053,66 @@ renderJoin();
 </script>
 
 <script>
+/* 시연: '강민서' 학생이 각 단계에서 직접 작성한 예시가 채워집니다 */
 window.addEventListener('DOMContentLoaded', function () {
   setTimeout(function () {
+    window.__MOCK.votes = window.__MOCK.votes.filter(function (v) { return v.voter !== '강민서'; });
     localStorage.removeItem('gg_join');
     document.getElementById('j-code').value = '1234';
     document.getElementById('j-name').value = '강민서';
     join();
   }, 400);
+
+  var done = { postit: false, topic: false, vote: false, debate: false };
+  setInterval(function () {
+    try {
+      if (S.phase === 'POSTIT' && !done.postit && document.getElementById('p-phrase')) {
+        done.postit = true;
+        document.getElementById('p-para').value = '61';
+        document.getElementById('p-phrase').value = '어떤 의도 같은 게 있을 리 없다고 생각하면서도 네가 한 말의 의미를 자꾸 요리조리 돌려보게 됐다.';
+        document.getElementById('p-comment').value = '나도 이 소설을 이렇게 읽고 있어서';
+      }
+      if (S.phase === 'TOPIC' && S.lessonSeen && !done.topic && document.getElementById('frame-body')) {
+        done.topic = true;
+        setFrame('R');
+        var radios = document.querySelectorAll('input[name="broken"]');
+        if (radios[2]) radios[2].checked = true;
+        document.getElementById('fr-text').value = "너를 만난 것은 '나'에게 잘못이었다.";
+        buildText();
+        for (var i = 0; i < 5; i++) { var el = document.getElementById('sc-' + i); if (el) el.checked = true; }
+        updateSubmit();
+      }
+      if (S.phase === 'VOTE' && S.ballot && !S.voteSubmitted && !done.vote && document.querySelector('.vote-card')) {
+        done.vote = true;
+        S.ballot.topics.forEach(function (t, i) {
+          var v = S.votes[t.id]; if (!v) return;
+          if (t.text.indexOf('진심') >= 0 || t.text.indexOf('체념') >= 0 || t.text.indexOf('제목') >= 0) v.star = true;
+          v.stance = (i % 3 === 0) ? '반대' : '찬성';
+        });
+        renderBallot();
+      }
+      if (S.phase === 'FINAL' && S.debate && !done.debate && document.querySelector('.tabs')) {
+        done.debate = true;
+        S.debate.stance = '찬성';
+        S.debate.members = '김하늘, 박준우, 손예린, 조아인, 강민서';
+        S.debate.myCards.push({ kind: '입론', para: '6',
+          body: '너는 사람과 고양이 모두를 놀래지 않으려 애씁니다',
+          quote: '태비와 나 모두를 놀래지 않으려는 듯 한 발 한 발 다가서는 네 모습은 신중해 보였고',
+          interp: '몸에 밴 조심스러움은 연기로 만들 수 없습니다' });
+        renderDebate();
+        setTimeout(function () {
+          var f = { 'dc-members': S.debate.members,
+                    'dc-body': '너는 비용 앞에서 흔들리지 않습니다',
+                    'dc-para': '27',
+                    'dc-quote': '계속 추가되는 병원비와 입원비 내역을 듣는 네 얼굴에선 걱정스럽거나 놀라운 기색을 발견하기 어려웠다',
+                    'dc-interp': '아까워하는 마음이 없는 자리에 거짓은 끼어들기 어렵습니다' };
+          Object.keys(f).forEach(function (id) {
+            var el = document.getElementById(id); if (el) el.value = f[id];
+          });
+        }, 250);
+      }
+    } catch (e) {}
+  }, 700);
 });
 </script>
 </body>
