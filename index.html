@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6ef; --card: #fffdf8; --ink: #3d3529; --sub: #8a7f6d;
+    --line: #e8dfd0; --accent: #c26d4f; --accent-soft: #f3e0d7;
+    --sage: #7d9478; --sage-soft: #e6ede4; --plum: #8d6a89;
+    --danger: #b5533c; --star: #e0a63c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+    background: var(--bg); color: var(--ink); min-height: 100vh; line-height: 1.6; }
+  h1, h2, .rank-card .t, .postit, .final-card .t { font-family: 'Gowun Batang', serif; }
+  #app { max-width: 1080px; margin: 0 auto; padding: 24px 20px 60px; }
+  .band { height: 6px; border-radius: 3px; margin-bottom: 20px;
+    background: linear-gradient(90deg, #c26d4f, #d9a353, #7d9478, #8d6a89); }
+  h1 { font-size: 26px; }
+  h2 { font-size: 19px; margin-bottom: 10px; }
+  .sub { color: var(--sub); font-size: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 22px; margin-top: 16px; box-shadow: 0 1px 3px rgba(61,53,41,.05); }
+  label { display: block; font-size: 13px; color: var(--sub); margin: 14px 0 4px; }
+  input[type=text], input[type=password], input[type=number] {
+    width: 100%; padding: 12px 14px; border: 1.5px solid var(--line);
+    border-radius: 10px; font-size: 16px; font-family: inherit; background: #fff; }
+  input:focus { outline: none; border-color: var(--accent); }
+  button { font-family: inherit; cursor: pointer; }
+  .btn { padding: 12px 24px; margin-top: 16px; background: var(--accent); color: #fff;
+    border: none; border-radius: 12px; font-size: 16px; font-weight: 700; }
+  .btn:disabled { background: #d8cfc0; cursor: not-allowed; }
+  .btn-ghost { padding: 10px 18px; background: none; border: 1.5px solid var(--line);
+    color: var(--sub); border-radius: 10px; font-size: 14px; margin-top: 16px; }
+  .topbar { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .code-big { font-size: 44px; font-weight: 800; letter-spacing: 6px; color: var(--accent); }
+  .phase-bar { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+  .phase-btn { padding: 11px 16px; border-radius: 12px; border: 1.5px solid var(--line);
+    background: #fff; font-size: 15px; color: var(--sub); }
+  .phase-btn.on { background: var(--accent); border-color: var(--accent);
+    color: #fff; font-weight: 700; }
+  .phase-btn.done { background: var(--accent-soft); border-color: var(--accent-soft);
+    color: var(--accent); }
+  .grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+  .tag { background: var(--sage-soft); color: var(--sage); border-radius: 20px;
+    padding: 6px 16px; font-size: 15px; font-weight: 600; }
+  .postit { width: 230px; padding: 14px; border-radius: 4px 14px 14px 14px;
+    font-size: 14px; box-shadow: 2px 3px 6px rgba(61,53,41,.12); }
+  .postit .who { font-size: 12px; opacity: .65; margin-top: 8px; }
+  .topic-row { display: flex; gap: 10px; align-items: flex-start; padding: 12px 0;
+    border-bottom: 1px dashed var(--line); font-size: 15px; }
+  .topic-row .who { min-width: 84px; color: var(--sub); font-size: 13px; padding-top: 2px; }
+  .chip { display: inline-block; font-size: 12px; padding: 2px 10px; border-radius: 20px; margin-left: 8px; }
+  .chip.warn { background: #f7edd8; color: #a07d2a; }
+  .chip.frame { background: var(--accent-soft); color: var(--accent); }
+  .chip.close { background: #efe2ee; color: var(--plum); font-weight: 700; }
+  .big-wait { text-align: center; padding: 40px; }
+  .big-wait .n { font-size: 64px; font-weight: 800; color: var(--sage); }
+  /* 결과 카드 */
+  .rank-card { display: flex; gap: 16px; align-items: center; background: var(--card);
+    border: 1.5px solid var(--line); border-radius: 16px; padding: 18px 20px;
+    margin-top: 12px; cursor: pointer; transition: border-color .2s; }
+  .rank-card:hover { border-color: var(--accent); }
+  .rank-card.top { border-width: 2px; border-color: var(--star); }
+  .rank-card.chosen { border-color: var(--accent); background: var(--accent-soft); }
+  .rank-card .medal { font-size: 30px; min-width: 46px; text-align: center; }
+  .rank-card .body { flex: 1; }
+  .rank-card .t { font-size: 18px; font-weight: 700; }
+  .rank-card .meta { font-size: 14px; color: var(--sub); margin-top: 4px; }
+  .rank-card .stars { font-size: 17px; color: var(--star); font-weight: 800; min-width: 70px; text-align: right; }
+  .bar { height: 10px; border-radius: 6px; background: #f6e3de; overflow: hidden;
+    margin-top: 8px; display: flex; }
+  .bar .pro { background: var(--sage); height: 100%; }
+  .author-reveal { display: inline-block; margin-left: 10px; font-weight: 800;
+    color: var(--accent); opacity: 0; transform: translateY(8px) scale(.8);
+    transition: all .45s cubic-bezier(.2,1.4,.4,1); }
+  .author-reveal.show { opacity: 1; transform: none; }
+  .roster { display: flex; gap: 12px; margin-top: 10px; font-size: 14px; }
+  .ro-col { flex: 1; border-radius: 10px; padding: 8px 14px; line-height: 1.7; }
+  .ro-col b { display: block; font-size: 13px; margin-bottom: 2px; }
+  .pro-col { background: var(--sage-soft); } .pro-col b { color: var(--sage); }
+  .con-col { background: #f6e3de; } .con-col b { color: var(--danger); }
+  .ro-btn { font-size: 12px; border: 1px solid var(--line); background: #fff;
+    border-radius: 8px; padding: 2px 10px; margin-left: 8px; color: var(--sub); cursor: pointer; }
+  .dc-cols { display: flex; gap: 12px; margin-top: 12px; align-items: flex-start; }
+  .dc-col { flex: 1; border-radius: 12px; padding: 12px; min-height: 60px; }
+  .dc-col h3 { font-size: 14px; margin-bottom: 8px; }
+  .dc-col.k1 { background: var(--sage-soft); } .dc-col.k1 h3 { color: var(--sage); }
+  .dc-col.k2 { background: #f4efe4; } .dc-col.k2 h3 { color: #a07d2a; }
+  .dc-col.k3 { background: #f6e3de; } .dc-col.k3 h3 { color: var(--danger); }
+  .dc-item { background: #fffdf8; border-radius: 10px; padding: 8px 10px;
+    margin-top: 6px; font-size: 13px; box-shadow: 0 1px 2px rgba(61,53,41,.08); }
+  .dc-item .who { color: var(--sub); font-size: 11px; margin-top: 3px; }
+  .dc-item .para { font-weight: 800; color: var(--accent); }
+  .dc-cols { flex-wrap: wrap; }
+  .team-col { flex: 1 1 46%; min-width: 320px; border-radius: 14px; padding: 16px 18px; }
+  .team-col h3 { font-size: 15px; margin-bottom: 4px; }
+  .t-pro { background: var(--sage-soft); } .t-pro h3 { color: var(--sage); }
+  .t-con { background: #f6e3de; } .t-con h3 { color: var(--danger); }
+  .speech-text { font-family: 'Gowun Batang', serif; font-size: 14.5px;
+    line-height: 1.85; margin-top: 10px; }
+  .speech-text p { margin-bottom: 8px; }
+  .speech-text b { color: var(--accent); }
+  .sp-label { font-weight: 800; font-size: 13px; margin: 12px 0 4px; color: var(--danger); }
+  .pick { width: 22px; height: 22px; accent-color: var(--accent); }
+  .err { color: var(--danger); font-size: 14px; margin-top: 8px; }
+  .hintline { background: #f4efe4; border-radius: 10px; padding: 10px 14px;
+    font-size: 13px; color: var(--sub); margin-top: 14px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* 강의 시연용 데모 — 20명 학급의 「3구역, 1구역」(김혜진) 수업 결과가 심어져 있습니다.
+   오른쪽 위 단계 버튼(1.밑줄→5.토론)으로 수업 흐름을 시연하세요. 문단 번호는 시연용 가상 번호입니다. */
+(function () {
+  var M = {
+    phase: 'POSTIT',
+    session: {
+      code: '1234', work: '3구역, 1구역',
+      characters: ['나', '너', '태비', '고양이', '교회', '3구역', '1구역', '재개발', '쉼터', '세림 빌라', '작가', '김혜진', '제목', '결말']
+    },
+    predicateBank: [
+      ['어쩔 수 없었다', '잘못이었다', '불가피했다'],
+      ['나쁘다', '무책임하다', '묵인이다'],
+      ['슬프다', '패배다', '인정이다'],
+      ['착하다', '정당했다', '최선이었다'],
+      ['감동적이다', '용기다', '모순이다']
+    ],
+    brokenCards: [
+      { id: 1, text: '부모는 자녀를 이해해야 한다', hint: '인물 이름이 없다' },
+      { id: 2, text: '이 소설은 슬프고 주제가 잘 드러난다', hint: "'그리고'로 두 주장이 붙어 있다" },
+      { id: 3, text: '주인공의 행동은 나쁘다', hint: '이름이 없고 도덕 판정이다' }
+    ],
+    selfCheck: [
+      '책을 읽지 않은 사람은 이 논제로 토론에 낄 수 없다',
+      '우리 반 절반쯤은 반대할 것 같다',
+      '근거가 되는 문단을 2군데 이상 댈 수 있다',
+      "'그리고·그런데'로 두 주장을 붙이지 않았다",
+      '평가하는 말(가치어)이 하나뿐이다'
+    ],
+    starLimit: 3,
+    guide: '<b>왜 좋은 논제를 골라야 할까?</b><br>좋은 논제 하나가 좋은 토론을 만듭니다. 뻔한 논제를 고르면 뻔한 말만 오가고, 갈리는 논제를 고르면 책을 다시 펴게 됩니다.<br>이 토론의 과정은 <b>생활기록부 교과 세부능력·특기사항</b>에 기록됩니다.<br>⭐ 별 3개는 "내가 토론하고 싶은 논제"에, 찬성/반대는 솔직한 내 입장대로 눌러 주세요.',
+    students: ['강민서', '고은채', '김도현', '김하늘', '나윤호', '문지유', '박서연', '박준우', '배소미', '서지호',
+               '손예린', '안태양', '오하람', '이도윤', '이수아', '장현우', '전민재', '정지우', '조아인', '한소율'],
+    postits: [
+      { author: '김하늘', phrase: '그런 공포를 느끼지 않은 건 아주 오랜만의 일이었다.', comment: '첫 만남에서 공포부터 이야기하는 게 이상해서', para: '8' },
+      { author: '박준우', phrase: '쓰레기와 온갖 잡동사니로 발 디딜 데 없는 공터에서 줄담배를 피우는 모습을 본 적이 있었다.', comment: '분식집 사장 장면이 계속 마음에 걸림', para: '17' },
+      { author: '이도윤', phrase: '그 사람만 아니었으면 여기 벌써 아파트 올라가고 있을걸요.', comment: '교회 앞의 그 사람과 같은 사람 맞나 싶어서', para: '23' },
+      { author: '김도현', phrase: '사람들이 참 이기적이지 않아요? 일일이 사정 다 봐주면서 재개발하는 데가 어디 있어요.', comment: '자기 얘긴 줄 모르는 것 같다', para: '25' },
+      { author: '박서연', phrase: '계속 추가되는 병원비와 입원비 내역을 듣는 네 얼굴에선 걱정스럽거나 놀라운 기색을 발견하기 어려웠다.', comment: '120만 원인데 아무렇지 않다니', para: '27' },
+      { author: '손예린', phrase: '네가 입은 모직 니트에서 버터 냄새 같은 게 올라오다 말다가 했다.', comment: '냄새 묘사가 이상하게 기억에 남음', para: '31' },
+      { author: '이수아', phrase: '나는 태비를 기다리고 있다는 사실을 종종 잊었다.', comment: '진짜 기다린 건 뭐였을까', para: '40' },
+      { author: '정지우', phrase: '"잘한 거죠. 정말 백번 잘한 일이죠." 나는 고개를 끄덕이고 말았다.', comment: "'끄덕이고 말았다'의 '말았다'가 걸린다", para: '48' },
+      { author: '장현우', phrase: '요령 있는 사람들이야 어디서나 잘살죠. 아무것도 모르는 고양이들만 불쌍하지.', comment: '사람은 왜 안 불쌍한가', para: '58' },
+      { author: '강민서', phrase: '어떤 의도 같은 게 있을 리 없다고 생각하면서도 네가 한 말의 의미를 자꾸 요리조리 돌려보게 됐다.', comment: '나도 이 소설을 이렇게 읽고 있음', para: '61' },
+      { author: '한소율', phrase: '그 밤에 내가 실감한 건 너와의 간극이었고 격차였다.', comment: '마음을 끝낸 게 감정이 아니라 격차라는 것', para: '70' },
+      { author: '고은채', phrase: '3구역 사람들이 다 이렇게 군말 없이 빨리 나가주면 참 좋을 텐데.', comment: '빈집 고양이를 걱정한 직후에 이 말을 함', para: '79' },
+      { author: '문지유', phrase: '그러므로 결코 내가 다 알 수 없는 사람이라는 생각이 들었다.', comment: '이게 이 소설의 결론인가', para: '81' },
+      { author: '서지호', phrase: '나는 또다시 이끌린 듯 그러겠다고 대답하며 걸음을 빨리하고 있었다.', comment: "마지막이 왜 '걸음을 빨리'일까", para: '88' }
+    ],
+    topics: [
+      { id: 'T1', author: '김하늘', text: '너의 고양이 사랑은 진심이다.', frame: '자유', final: 'O' },
+      { id: 'T2', author: '이도윤', text: "'나'가 마지막에 쉼터로 따라간 것은 호감이 아니라 체념이다.", frame: '틀B', final: '' },
+      { id: 'T3', author: '박서연', text: "작가가 '너'의 속마음을 끝까지 감춘 것은 성공적이다.", frame: '자유', final: '' },
+      { id: 'T4', author: '김도현', text: '너에게 고양이 구조와 재개발은 같은 일이다.', frame: '자유', final: '' },
+      { id: 'T5', author: '이수아', text: "이 소설의 제목이 '너와 나'가 아니라 '3구역, 1구역'인 것은 옳았다.", frame: '자유', final: '' },
+      { id: 'T6', author: '정지우', text: "'나'가 대출 권유를 거절한 것은 자존심이 아니라 두려움이다.", frame: '틀B', final: '' },
+      { id: 'T7', author: '장현우', text: '세림 빌라에서 고양이를 찾는 너의 필사적임은 죄책감이다.', frame: '자유', final: '' },
+      { id: 'T8', author: '강민서', text: "너를 만난 것은 '나'에게 잘못이었다.", frame: '수리', final: '' },
+      { id: 'T9', author: '한소율', text: "'나'의 침묵은 예의가 아니라 묵인이다.", frame: '틀B', final: '' },
+      { id: 'T10', author: '고은채', text: '태비는 불쌍하다.', frame: '자유', final: '' },
+      { id: 'T11', author: '나윤호', text: "너는 다정하고 그리고 '나'는 외롭다.", frame: '자유', final: '' },
+      { id: 'T12', author: '배소미', text: '1구역과 3구역의 차이는 횡단보도 하나가 아니다.', frame: '자유', final: '' },
+      { id: 'T13', author: '서지호', text: '태비의 구내염은 3구역의 병이다.', frame: '자유', final: '' },
+      { id: 'T14', author: '손예린', text: '너의 쉼터는 선행이 아니라 알리바이다.', frame: '틀B', final: '' },
+      { id: 'T15', author: '안태양', text: "'나'는 너를 사랑했다.", frame: '자유', final: '' },
+      { id: 'T16', author: '문지유', text: '작가가 결말을 열어둔 것은 무책임하다.', frame: '틀A', final: '' }
+    ],
+    votes: [],
+    speeches: [
+      { topicId: 'T1', stance: '찬성', members: '김하늘, 박준우, 손예린, 조아인, 강민서',
+        text: '저희는 이 논제에 찬성합니다. 너는 모순된 사람일지언정, 고양이 앞에서만큼은 진짜라고 생각합니다.\n\n첫째, 너는 비용 앞에서 흔들리지 않습니다. 27번 문단, 병원비가 50만 원에서 120만 원으로 불어나는 동안 너의 얼굴에는 아무 기색이 없습니다. 아까워하는 마음이 없는 자리에 거짓은 끼어들기 어렵습니다.\n\n둘째, 너는 아무도 보지 않는 곳에서 가장 필사적입니다. 76번 문단, 빈집의 싱크대 밑과 신발장, 베란다 선반까지 뒤지는 그 모습에는 관객이 없습니다. 보여주기 위한 선행이라면 거기서 멈췄을 것입니다.\n\n[반론] 상대측은 79번 문단을 들어 사랑까지 부정하려 합니다. 하지만 그 문단이 보여주는 것은 모순이지 거짓이 아닙니다. 모순된 사람이라는 것과 사랑이 거짓이라는 것은 서로 다른 주장이며, 상대측의 인용은 두번째 주장까지 이어지지 못합니다.\n\n또한 상대측은 고양이만 불쌍하다는 말을 진심의 반증으로 들었습니다. 하지만 너는 3구역 출신입니다. 사람의 사정을 몰라서가 아니라 너무 잘 알기 때문에 나온 자기방어이며, 그 방어막 안에서도 끝까지 남겨둔 것이 고양이라면 그곳이야말로 진심의 자리입니다. 그래서 저희는 찬성합니다.' },
+      { topicId: 'T1', stance: '반대', members: '문지유, 서지호, 오하람, 전민재, 배소미',
+        text: '저희는 이 논제에 반대합니다. 너의 고양이 사랑은 진심이 아니라, 진심처럼 보이는 취향입니다.\n\n첫째, 너의 사랑은 사람을 지우는 자리에서만 작동합니다. 79번 문단, 빈집의 고양이를 걱정하던 바로 그 입으로 너는 3구역 사람들이 다 군말 없이 빨리 나가주면 좋겠다고 말합니다. 고양이를 향한 다정과 사람을 밀어내는 냉담이 한 호흡입니다.\n\n둘째, 58번 문단에서 너는 아무것도 모르는 고양이들만 불쌍하다고 말합니다. 값을 치르지 않아도 되는 대상만 골라 사랑하는 것, 그것은 사랑이 아니라 취미입니다.\n\n[반론] 상대측은 120만 원 앞의 무표정을 진심의 증거라 했습니다. 하지만 그것은 진심의 증거가 아니라 여유의 증거입니다. 분양권 차익을 올린 사람에게 120만 원은 시험이 되지 못하므로, 흔들리지 않았다는 사실은 아무것도 증명하지 못합니다.\n\n또한 상대측은 빈집에서의 필사적임을 들었습니다. 필사적인 것은 사실입니다. 하지만 그 수색의 마지막에 나온 말이 무엇이었는지 기억해 주십시오. 3구역 사람들이 빨리 나가주면 좋겠다는 말이었습니다. 그 필사적임이 무엇과 나란히 놓여 있는지를 보면, 저희는 그것을 진심이라 부르기 어렵습니다. 그래서 저희는 반대합니다.' }
+    ],
+    debateCards: [
+      { topicId: 'T1', author: '박서연', kind: '입론', para: '36', stance: '찬성',
+        body: '너는 오지 않는 태비에게서 시선을 떼지 못합니다',
+        quote: '내가 잠깐씩 휴대전화를 열어 시간을 확인하는 동안에도 너는 통덫에서 시선을 떼지 못했다',
+        interp: '지루함을 이기는 기다림은 꾸며낼 수 있는 것이 아닙니다',
+        members: '고은채, 나윤호, 박서연, 이수아, 정지우' },
+      { topicId: 'T1', author: '정지우', kind: '입론', para: '37', stance: '찬성',
+        body: '너의 걱정은 공포를 이길 만큼 큽니다',
+        quote: '태비에 대한 걱정이 폐가나 다름없는 건물을 마주하고 있다는 공포나 두려움 같은 걸 말끔히 지워버린 모양이었다',
+        interp: '꾸며낸 마음은 무서움을 이기지 못합니다',
+        members: '고은채, 나윤호, 박서연, 이수아, 정지우' },
+      { topicId: 'T1', author: '고은채', kind: '반론', para: '58', stance: '찬성',
+        body: '문단 58은 냉소가 아니라 연민입니다. 사람에게 실망해 본 사람이 고양이에게로 마음을 옮긴 것이므로, 이 말은 사랑이 없다는 증거가 아니라 사랑의 방향이 바뀌었다는 증거입니다',
+        quote: '재해석', interp: '고양이만 골라 사랑하는 것은 사랑이 아니라 취미다',
+        members: '고은채, 나윤호, 박서연, 이수아, 정지우' },
+      { topicId: 'T1', author: '나윤호', kind: '반론', para: '27', stance: '찬성',
+        body: '쉼터가 어차피 헐릴 집이라 해도, 고양이 세 마리의 병원비와 입원비는 어디서도 돌려받을 수 없는 돈입니다. 아무것도 희생하지 않았다는 상대측의 전제는 문단 27 앞에서 무너집니다',
+        quote: '반례', interp: '쉼터는 남는 자산의 임시 활용이므로 희생이 없다',
+        members: '고은채, 나윤호, 박서연, 이수아, 정지우' },
+      { topicId: 'T1', author: '김하늘', kind: '입론', para: '27', stance: '찬성',
+        body: '너는 비용 앞에서 흔들리지 않습니다',
+        quote: '계속 추가되는 병원비와 입원비 내역을 듣는 네 얼굴에선 걱정스럽거나 놀라운 기색을 발견하기 어려웠다',
+        interp: '아까워하는 마음이 없는 자리에 거짓은 끼어들기 어렵습니다',
+        members: '김하늘, 박준우, 손예린, 조아인, 강민서' },
+      { topicId: 'T1', author: '박준우', kind: '입론', para: '76', stance: '찬성',
+        body: '너는 아무도 보지 않는 빈집에서 가장 필사적입니다',
+        quote: '도저히 고양이가 있을 법하지 않은 서랍장과 싱크대, 신발장, 베란다 구석 선반까지 확인하고',
+        interp: '보여주기 위한 선행이라면 관객 없는 곳에서 멈췄을 것입니다',
+        members: '김하늘, 박준우, 손예린, 조아인, 강민서' },
+      { topicId: 'T1', author: '조아인', kind: '반론', para: '79', stance: '찬성',
+        body: '문단 79는 너가 모순된 사람임을 보여줄 뿐입니다. 모순된 사람이라는 것과 사랑이 거짓이라는 것은 서로 다른 주장이며, 상대측의 인용은 두번째 주장까지 이어지지 못합니다',
+        quote: '연결', interp: '고양이 사랑이 재개발 논리와 한 몸이므로 진심이 아니다',
+        members: '김하늘, 박준우, 손예린, 조아인, 강민서' },
+      { topicId: 'T1', author: '손예린', kind: '반론', para: '47', stance: '찬성',
+        body: '너는 3구역 출신입니다. 사람의 사정을 몰라서 냉담한 것이 아니라, 너무 잘 알기 때문에 나온 자기방어로 읽어야 합니다. 그 방어막 안에서도 끝까지 남겨둔 것이 고양이라면, 그것이야말로 진심의 자리입니다',
+        quote: '재해석', interp: '고양이만 불쌍하다는 말은 진심의 방향을 보여준다',
+        members: '김하늘, 박준우, 손예린, 조아인, 강민서' },
+      { topicId: 'T1', author: '이도윤', kind: '입론', para: '77', stance: '반대',
+        body: '너의 쉼터는 남는 자산의 임시 활용입니다',
+        quote: '워낙 오래된 집이라 세도 잘 안 나가고 어차피 재개발될 거니까 당분간만 애들 데리고 있으려고요',
+        interp: '아무것도 희생하지 않는 선행은 진심을 증명하지 못합니다',
+        members: '김도현, 안태양, 이도윤, 장현우, 한소율' },
+      { topicId: 'T1', author: '한소율', kind: '입론', para: '25', stance: '반대',
+        body: '너는 사람의 사정에는 냉담합니다',
+        quote: '사람들이 참 이기적이지 않아요? 일일이 사정 다 봐주면서 재개발하는 데가 어디 있어요',
+        interp: '생명을 향한 진심이라면 사람의 사정 앞에서도 작동해야 합니다',
+        members: '김도현, 안태양, 이도윤, 장현우, 한소율' },
+      { topicId: 'T1', author: '김도현', kind: '반론', para: '6', stance: '반대',
+        body: '공포를 지운 것은 고양이 걱정이 아니라 익숙함입니다. 첫 장면부터 너는 이런 일에 익숙해 보였다고 서술되며, 익숙한 사람에게 폐가는 애초에 무서운 곳이 아닙니다',
+        quote: '반례', interp: '너의 걱정은 공포를 이길 만큼 크다',
+        members: '김도현, 안태양, 이도윤, 장현우, 한소율' },
+      { topicId: 'T1', author: '장현우', kind: '반론', para: '51', stance: '반대',
+        body: '그 기다림의 끝에서 너는 명함을 꺼냈습니다. 구조의 자리가 자연스럽게 영업의 자리로 이어지는 이상, 기다림의 길이만으로 진심을 증명할 수는 없습니다',
+        quote: '연결', interp: '지루함을 이기는 기다림은 꾸며낼 수 없다',
+        members: '김도현, 안태양, 이도윤, 장현우, 한소율' },
+      { topicId: 'T1', author: '문지유', kind: '입론', para: '79', stance: '반대',
+        body: '너의 사랑은 사람을 지우는 자리에서만 작동합니다',
+        quote: '3구역 사람들이 다 이렇게 군말 없이 빨리 나가주면 참 좋을 텐데',
+        interp: '고양이를 아끼는 말과 사람을 밀어내는 말이 같은 입에서 한 호흡으로 나옵니다',
+        members: '문지유, 서지호, 오하람, 전민재, 배소미' },
+      { topicId: 'T1', author: '서지호', kind: '입론', para: '58', stance: '반대',
+        body: '고양이만 불쌍하다는 말은 진심의 방향을 보여줍니다',
+        quote: '요령 있는 사람들이야 어디서나 잘살죠. 아무것도 모르는 고양이들만 불쌍하지',
+        interp: '값을 치르지 않아도 되는 대상만 골라 사랑하는 것은 사랑이 아니라 취미입니다',
+        members: '문지유, 서지호, 오하람, 전민재, 배소미' },
+      { topicId: 'T1', author: '문지유', kind: '반론', para: '27', stance: '반대',
+        body: '문단 27의 무표정은 진심의 증거가 아니라 여유의 증거입니다. 분양권 차익을 올린 사람에게 120만 원은 시험이 되지 못하므로, 흔들리지 않았다는 사실은 아무것도 증명하지 못합니다',
+        quote: '재해석', interp: '비용 앞에서 흔들리지 않으니 진심이다',
+        members: '문지유, 서지호, 오하람, 전민재, 배소미' },
+      { topicId: 'T1', author: '전민재', kind: '반론', para: '79', stance: '반대',
+        body: '빈집 수색의 마지막에 나온 말은 3구역 사람들이 빨리 나가주면 좋겠다는 것이었습니다. 필사적인 것은 사실이지만, 그 필사적임이 무엇과 나란히 놓여 있는지를 보면 진심이라 부르기 어렵습니다',
+        quote: '재해석', interp: '아무도 보지 않는 빈집에서 필사적이다',
+        members: '문지유, 서지호, 오하람, 전민재, 배소미' }
+    ],
+    seedVotes: function () {
+      var spec = {
+        T1: { stars: 9, pro: 9 },  T2: { stars: 8, pro: 10 }, T3: { stars: 5, pro: 12 },
+        T4: { stars: 7, pro: 8 },  T5: { stars: 5, pro: 11 }, T6: { stars: 4, pro: 9 },
+        T7: { stars: 3, pro: 7 },  T8: { stars: 3, pro: 5 },  T9: { stars: 2, pro: 8 },
+        T10: { stars: 1, pro: 18 }, T11: { stars: 0, pro: 15 }, T12: { stars: 2, pro: 16 },
+        T13: { stars: 2, pro: 9 }, T14: { stars: 4, pro: 8 }, T15: { stars: 3, pro: 10 },
+        T16: { stars: 2, pro: 4 }
+      };
+      var v = [];
+      M.topics.forEach(function (t, ti) {
+        var s = spec[t.id];
+        var voters = M.students.filter(function (n) { return n !== t.author; });
+        var off = (ti * 7) % voters.length;
+        var rot = voters.slice(off).concat(voters.slice(0, off));
+        rot.forEach(function (name, i) {
+          v.push({ topicId: t.id, voter: name,
+                   star: i < s.stars ? 1 : 0,
+                   stance: i < s.pro ? '찬성' : '반대' });
+        });
+      });
+      M.votes = v;
+    }
+  };
+  M.seedVotes();
+  window.__MOCK = M;
+
+  function computeResults() {
+    var map = {};
+    M.topics.forEach(function (t) {
+      map[t.id] = { id: t.id, author: t.author, text: t.text, frame: t.frame,
+        stars: 0, pro: 0, con: 0, proNames: [], conNames: [], final: t.final === 'O' };
+    });
+    M.votes.forEach(function (r) {
+      var t = map[r.topicId]; if (!t) return;
+      if (r.star === 1) t.stars++;
+      if (r.stance === '찬성') { t.pro++; t.proNames.push(r.voter); }
+      else if (r.stance === '반대') { t.con++; t.conNames.push(r.voter); }
+    });
+    var list = Object.keys(map).map(function (k) { return map[k]; });
+    list.sort(function (a, b) { return (b.stars - a.stars) || String(a.id).localeCompare(String(b.id)); });
+    list.forEach(function (t, i) {
+      t.rank = i + 1;
+      var tot = t.pro + t.con, ratio = tot ? t.pro / tot : 0;
+      t.close = tot >= 5 && ratio >= 0.4 && ratio <= 0.6;
+    });
+    return list;
+  }
+
+  var API = {
+    joinSession: function (code, name) {
+      if (String(code) !== M.session.code) throw new Error('세션 코드를 확인하세요.');
+      if (M.students.indexOf(name) < 0) M.students.push(name);
+      return { code: M.session.code, work: M.session.work, characters: M.session.characters,
+        phase: M.phase, predicateBank: M.predicateBank, brokenCards: M.brokenCards,
+        selfCheck: M.selfCheck, starLimit: M.starLimit };
+    },
+    getPhase: function () { return M.phase; },
+    submitPostit: function (code, name, phrase, comment, para) {
+      if (!phrase) throw new Error('밑줄 그은 구절을 옮겨 적어 주세요.');
+      if (!para) throw new Error('문단 번호를 적어 주세요.');
+      M.postits.push({ author: name, phrase: phrase, comment: comment, para: para });
+      return { ok: true };
+    },
+    submitTopic: function (code, name, t) {
+      var norm = String(t.text || '').replace(/\s+/g, '');
+      var hasChar = M.session.characters.some(function (c) { return norm.indexOf(c.replace(/\s+/g, '')) >= 0; });
+      if (!hasChar) throw new Error('논제에 작품의 핵심어가 하나는 들어가야 합니다.');
+      var id = 'T' + (M.topics.length + 1) + '_' + Math.floor(Math.random() * 1000);
+      M.topics.push({ id: id, author: name, text: t.text, frame: t.frame, final: '' });
+      return { ok: true, id: id };
+    },
+    getBallot: function (code, name) {
+      var topics = M.topics.filter(function (t) { return t.author !== name; })
+        .map(function (t) { return { id: t.id, text: t.text }; });
+      return { guide: M.guide, starLimit: M.starLimit, topics: topics,
+        alreadyVoted: M.votes.some(function (v) { return v.voter === name; }) };
+    },
+    submitVotes: function (code, name, votes) {
+      var stars = votes.filter(function (v) { return v.star; }).length;
+      if (stars > M.starLimit) throw new Error('별은 최대 ' + M.starLimit + '개입니다.');
+      M.votes = M.votes.filter(function (v) { return v.voter !== name; });
+      votes.forEach(function (v) {
+        M.votes.push({ topicId: v.id, voter: name, star: v.star ? 1 : 0, stance: v.stance });
+      });
+      return { ok: true };
+    },
+    submitDebateCard: function (code, name, c) {
+      if (!c.topicId) throw new Error('어느 논제의 카드인지 선택하세요.');
+      if ((c.kind === '입론' || c.kind === '반론') && !c.members) throw new Error('모둠 구성원 이름을 적으세요.');
+      if (c.kind === '반론' && !c.target) throw new Error('상대 주장을 한 줄로 적으세요.');
+      M.debateCards.push({ topicId: c.topicId, author: name, kind: c.kind, para: c.para, stance: c.stance || '',
+        body: c.body, quote: c.quote, interp: (c.kind === '반론' ? (c.target || '') : c.interp),
+        members: c.members || '' });
+      return { ok: true };
+    },
+    saveSpeech: function (code, name, topicId, stance, members, text) {
+      if (!String(text || '').trim()) throw new Error('발표문이 비어 있습니다.');
+      if (!String(members || '').trim()) throw new Error('모둠 구성원을 입력하세요 (팀 구분에 사용됩니다).');
+      var nt = function (x) { return String(x || '').replace(/\s+/g, ''); };
+      M.speeches = (M.speeches || []).filter(function (s) {
+        return !(String(s.topicId) === String(topicId) && s.stance === stance && nt(s.members) === nt(members));
+      });
+      M.speeches.push({ topicId: topicId, stance: stance, members: members || '', text: text });
+      return { ok: true };
+    },
+    getSpeech: function (code, topicId, stance, members) {
+      var nt = function (x) { return String(x || '').replace(/\s+/g, ''); };
+      var found = null;
+      (M.speeches || []).forEach(function (s) {
+        if (String(s.topicId) === String(topicId) && s.stance === stance && nt(s.members) === nt(members)) found = s;
+      });
+      return found ? { text: found.text, members: found.members } : null;
+    },
+    getDebateHome: function (code, name) {
+      var topics = computeResults().filter(function (t) { return t.final; });
+      var mine = M.debateCards.filter(function (c) { return c.author === name; })
+        .map(function (c) { return { kind: c.kind, para: c.para, body: c.body, quote: c.quote, interp: c.interp }; });
+      return { topics: topics, myCards: mine };
+    },
+    getFinalTopics: function () {
+      return computeResults().filter(function (t) { return t.final; });
+    },
+    createSession: function (pin, work, chars) {
+      return { code: M.session.code, work: M.session.work };
+    },
+    openSession: function () {
+      return { code: M.session.code, work: M.session.work, characters: M.session.characters, phase: M.phase };
+    },
+    setPhase: function (pin, code, phase) { M.phase = phase; return { phase: phase }; },
+    setFinal: function (pin, code, ids) {
+      M.topics.forEach(function (t) { t.final = ids.indexOf(t.id) >= 0 ? 'O' : ''; });
+      M.phase = 'FINAL';
+      return { ok: true };
+    },
+    getTeacherState: function () {
+      var st = { phase: M.phase, work: M.session.work, characters: M.session.characters,
+        students: M.students.slice() };
+      if (M.phase === 'POSTIT' || M.phase === 'TOPIC') st.postits = M.postits.slice();
+      if (M.phase === 'TOPIC' || M.phase === 'VOTE') {
+        st.topics = M.topics.map(function (t) {
+          return { id: t.id, author: t.author, text: t.text, frame: t.frame,
+            warnAnd: /그리고|그런데/.test(t.text) };
+        });
+      }
+      if (M.phase === 'VOTE') {
+        var voters = {};
+        M.votes.forEach(function (v) { voters[v.voter] = true; });
+        st.voted = Object.keys(voters);
+      }
+      if (M.phase === 'RESULT' || M.phase === 'FINAL') st.results = computeResults();
+      if (M.phase === 'FINAL') { st.debateCards = M.debateCards.slice(); st.speeches = (M.speeches || []).slice(); }
+      return st;
+    }
+  };
+
+  function Runner(ok, fail) {
+    var self = {};
+    self.withSuccessHandler = function (f) { return Runner(f, fail); };
+    self.withFailureHandler = function (f) { return Runner(ok, f); };
+    Object.keys(API).forEach(function (name) {
+      self[name] = function () {
+        var args = arguments;
+        setTimeout(function () {
+          try { var r = API[name].apply(null, args); (ok || function () {})(r); }
+          catch (e) { (fail || function (e) { alert(e.message || e); })(e); }
+        }, 120);
+      };
+    });
+    return self;
+  }
+  window.google = { script: { run: Runner(null, null) } };
+
+  window.addEventListener('DOMContentLoaded', function () {
+    var bar = document.createElement('div');
+    bar.style.cssText = 'position:fixed;top:6px;right:6px;z-index:9999;background:#3d3529;color:#fff;' +
+      'padding:8px 10px;border-radius:10px;font-size:12px;opacity:.92';
+    bar.innerHTML = '<b>시연 단계</b>: ' + [
+      ['POSTIT', '1.밑줄'], ['TOPIC', '2.논제'], ['VOTE', '3.투표'],
+      ['RESULT', '4.결과'], ['FINAL', '5.토론']
+    ].map(function (p) {
+      return '<button style="margin:2px;font-size:12px;padding:3px 8px;border-radius:6px;border:none;cursor:pointer" ' +
+        'onclick="window.__MOCK.phase=\'' + p[0] + '\'">' + p[1] + '</button>';
+    }).join('');
+    document.body.appendChild(bar);
+  });
+})();
+
+</script>
+<script>
+var T = { pin: null, code: null, work: '', state: null, resultsRendered: false,
+          revealed: {}, picked: {} };
+
+function $(id) { return document.getElementById(id); }
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+function run(ok, fail) {
+  var r = google.script.run.withSuccessHandler(ok || function () {});
+  r = r.withFailureHandler(fail || function (e) { alert(e.message || e); });
+  return r;
+}
+function app(html) { $('app').innerHTML = '<div class="band"></div>' + html; }
+
+/* ───────── 로그인 & 세션 ───────── */
+function renderLogin(msg) {
+  app('<h1>독서토론으로 깊이 읽기 · 교사 📖</h1>' +
+    '<div class="card" style="max-width:420px">' +
+    '<label>교사 비밀번호</label><input type="password" id="l-pin">' +
+    (msg ? '<div class="err">' + esc(msg) + '</div>' : '') +
+    '<button class="btn" onclick="login()">들어가기</button></div>');
+  $('l-pin').addEventListener('keydown', function (e) { if (e.key === 'Enter') login(); });
+}
+function login() {
+  T.pin = $('l-pin').value.trim();
+  renderHome();
+}
+
+function renderHome(msg) {
+  app('<h1>독서토론으로 깊이 읽기 · 교사 📖</h1>' +
+    '<div class="card" style="max-width:560px"><h2>새 세션 만들기</h2>' +
+    '<label>작품명</label><input type="text" id="s-work" value="피노키오의 꿈">' +
+    '<label>핵심어 (인물·작가·형식 요소 — 쉼표로 구분. 논제에 이 중 하나가 있어야 제출됨)</label>' +
+    '<input type="text" id="s-chars" value="피노키오, 철수, 노인, 할아버지, 신, 방송국, 국가, 총단, 종교, 작가, 김동식, 제목, 결말, 소나무">' +
+    '<button class="btn" onclick="makeSession()">세션 만들기</button></div>' +
+    '<div class="card" style="max-width:560px"><h2>기존 세션 열기</h2>' +
+    '<label>세션 코드</label><input type="number" id="s-code">' +
+    (msg ? '<div class="err">' + esc(msg) + '</div>' : '') +
+    '<button class="btn-ghost" onclick="openOld()">열기</button></div>');
+}
+function makeSession() {
+  run(function (res) {
+    T.code = res.code; T.work = res.work; startPoll();
+  }, function (e) { renderHome(e.message || String(e)); })
+  .createSession(T.pin, $('s-work').value, $('s-chars').value);
+}
+function openOld() {
+  run(function (res) {
+    T.code = res.code; T.work = res.work; startPoll();
+  }, function (e) { renderHome(e.message || String(e)); })
+  .openSession(T.pin, $('s-code').value.trim());
+}
+
+/* ───────── 폴링 ───────── */
+var pollTimer = null;
+function startPoll() {
+  fetchState();
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(fetchState, 3500);
+}
+function fetchState() {
+  run(function (st) {
+    var prevPhase = T.state && T.state.phase;
+    T.state = st;
+    if (st.phase !== prevPhase) T.resultsRendered = false;
+    render();
+    if (st.phase === 'FINAL') updateDebateBoard(st.debateCards || []);
+  }, function () {}).getTeacherState(T.pin, T.code);
+}
+
+function endDotT_(s) {
+  s = String(s || '').trim();
+  return s && !/[.!?]$/.test(s) ? s + '.' : s;
+}
+
+function teamSpeech_(stance, ip, rb) {
+  var ORD = ['첫째', '둘째', '셋째', '넷째', '다섯째', '여섯째'];
+  var h = '';
+  if (ip.length) {
+    h += '<p>저희는 이 논제에 <b>' + stance + '</b>합니다.</p>';
+    ip.forEach(function (c, i) {
+      h += '<p>' + (ORD[i] || (i + 1) + '번째') + ', ' + endDotT_(esc(c.body)) +
+        ' 본문 <b>' + esc(c.para) + '번 문단</b>을 보면' +
+        (c.quote ? ' "' + esc(c.quote) + '"라고 되어 있습니다.' : ' 근거를 확인할 수 있습니다.') +
+        (c.interp ? ' ' + endDotT_(esc(c.interp)) : '') + '</p>';
+    });
+    h += '<p>그래서 저희는 이 논제에 다시 한 번 <b>' + stance + '</b>합니다.</p>';
+  }
+  if (rb.length) {
+    h += '<div class="sp-label">🔥 반론</div>';
+    rb.forEach(function (c) {
+      h += '<p>상대측은 "' + esc(c.interp) + '"라고 주장했습니다. 하지만 저희는 그 대목을 다르게 읽었습니다. ' +
+        endDotT_(esc(c.body)) +
+        (c.para ? ' 본문 <b>' + esc(c.para) + '번 문단</b>이 저희 반론의 근거입니다.' : '') + '</p>';
+    });
+    h += '<p>이상으로 상대측 주장에 대한 저희 팀의 반론을 마칩니다.</p>';
+  }
+  return h || '<div class="sub" style="margin-top:8px">아직 제출된 카드가 없습니다</div>';
+}
+
+function updateDebateBoard(cards) {
+  var board = $('debate-board');
+  if (!board) return;
+  var count = $('dc-count');
+  if (count) count.textContent = cards.length ? '· 카드 ' + cards.length + '장' : '';
+  if (!cards.length) return;
+  var finals = (T.state.results || []).filter(function (t) { return t.final; });
+  var normTeam = function (s) { return String(s || '').replace(/\s+/g, ''); };
+  var html = finals.map(function (topic) {
+    var mine = cards.filter(function (c) { return String(c.topicId) === String(topic.id); });
+    // (입장 + 모둠원)으로 팀을 구분 — 찬성·반대 각각 여러 팀 가능
+    var teams = [];
+    function getTeam(stance, members) {
+      var key = stance + '|' + normTeam(members);
+      for (var i = 0; i < teams.length; i++) if (teams[i].key === key) return teams[i];
+      var t = { key: key, stance: stance, members: members || '', cards: [], saved: null };
+      teams.push(t);
+      return t;
+    }
+    mine.forEach(function (c) {
+      if (c.stance !== '찬성' && c.stance !== '반대') return;
+      getTeam(c.stance, c.members).cards.push(c);
+    });
+    (T.state.speeches || []).forEach(function (s) {
+      if (String(s.topicId) !== String(topic.id)) return;
+      getTeam(s.stance, s.members).saved = s;
+    });
+    teams.sort(function (a, b) {
+      if (a.stance !== b.stance) return a.stance === '찬성' ? -1 : 1;
+      return a.key < b.key ? -1 : 1;
+    });
+    var proN = 0, conN = 0;
+    var cols = teams.map(function (team) {
+      var n = team.stance === '찬성' ? ++proN : ++conN;
+      var ip = team.cards.filter(function (c) { return c.kind === '입론'; });
+      var rb = team.cards.filter(function (c) { return c.kind === '반론'; });
+      var bodyHtml, label = '';
+      if (team.saved) {
+        bodyHtml = team.saved.text.split(/\n+/).map(function (line) {
+          return line.trim() ? '<p>' + esc(line.trim()) + '</p>' : '';
+        }).join('');
+        label = '<div class="sub" style="margin-top:6px">📜 팀이 정리한 발표문</div>';
+      } else {
+        bodyHtml = teamSpeech_(team.stance, ip, rb);
+      }
+      return '<div class="team-col ' + (team.stance === '찬성' ? 't-pro' : 't-con') + '">' +
+        '<h3>' + (team.stance === '찬성' ? '🙆 찬성 ' : '🙅 반대 ') + n + '팀</h3>' +
+        (team.members ? '<div class="sub">👥 ' + esc(team.members) + '</div>' : '') + label +
+        '<div class="speech-text">' + bodyHtml + '</div></div>';
+    }).join('');
+    return '<div class="card"><h2 style="font-size:17px">' + esc(topic.text) + '</h2>' +
+      '<div class="dc-cols">' + (cols || '<div class="sub">아직 제출된 카드가 없습니다</div>') + '</div></div>';
+  }).join('');
+  board.innerHTML = html;
+}
+
+/* ───────── 화면 ───────── */
+var PHASES = [
+  { key: 'WAIT',   label: '대기실' },
+  { key: 'POSTIT', label: '1단계 밑줄' },
+  { key: 'TOPIC',  label: '2단계 논제' },
+  { key: 'VOTE',   label: '투표 시작' },
+  { key: 'RESULT', label: '투표 종료 · 결과' }
+];
+
+function phaseBar() {
+  var idx = PHASES.findIndex(function (p) { return p.key === T.state.phase; });
+  if (T.state.phase === 'FINAL') idx = PHASES.length;
+  return '<div class="phase-bar">' + PHASES.map(function (p, i) {
+    var cls = (p.key === T.state.phase) ? 'on' : (i < idx ? 'done' : '');
+    return '<button class="phase-btn ' + cls + '" onclick="goPhase(\'' + p.key + '\')">' + p.label + '</button>';
+  }).join('') + '</div>';
+}
+
+function goPhase(key) {
+  if (key === 'VOTE' && (!T.state.topics || !T.state.topics.length)) {
+    if (!confirm('아직 제출된 논제가 없습니다. 그래도 투표를 열까요?')) return;
+  }
+  if (key === 'RESULT' && T.state.phase === 'VOTE') {
+    if (!confirm('투표를 종료하고 결과를 공개할까요?')) return;
+  }
+  run(function () { fetchState(); }).setPhase(T.pin, T.code, key);
+}
+
+function header_() {
+  return '<div class="topbar"><div><h1>' + esc(T.work) + '</h1>' +
+    '<div class="sub">독서토론으로 깊이 읽기 · 세션 코드</div></div>' +
+    '<div class="code-big">' + esc(T.code) + '</div></div>' + phaseBar();
+}
+
+function render() {
+  if (!T.state) return;
+  switch (T.state.phase) {
+    case 'WAIT':   return renderWaitRoom();
+    case 'POSTIT': return renderPostitWall();
+    case 'TOPIC':  return renderTopicBoard();
+    case 'VOTE':   return renderVoteProgress();
+    case 'RESULT': return renderResults(false);
+    case 'FINAL':  return renderResults(true);
+  }
+}
+
+function renderWaitRoom() {
+  var st = T.state;
+  app(header_() +
+    '<div class="card"><h2>입장 현황 · ' + st.students.length + '명</h2>' +
+    '<div class="grid">' + st.students.map(function (n) {
+      return '<span class="tag">' + esc(n) + '</span>';
+    }).join('') + '</div>' +
+    '<div class="hintline">학생 접속 주소를 칠판에 띄우고, 위 4자리 코드를 안내하세요. ' +
+    '전원이 입장하면 [1단계 밑줄]을 여세요.<br>' +
+    '🎤 <b>"주소로 들어와서 칠판의 네 자리 숫자와 실명을 입력하세요."</b></div></div>');
+}
+
+var POSTIT_COLORS = ['#fdf3d0', '#e6ede4', '#f3e0d7', '#efe2ee', '#e3ecf2'];
+function renderPostitWall() {
+  var st = T.state;
+  var wall = (st.postits || []).map(function (p, i) {
+    return '<div class="postit" style="background:' + POSTIT_COLORS[i % 5] + '">' +
+      '❝' + esc(p.phrase) + '❞' +
+      (p.para ? ' <span class="sub">(문단 ' + esc(p.para) + ')</span>' : '') +
+      (p.comment ? '<div class="sub" style="margin-top:4px">— ' + esc(p.comment) + '</div>' : '') +
+      '<div class="who">' + esc(p.author) + '</div></div>';
+  }).join('');
+  app(header_() +
+    '<div class="card"><h2>밑줄 벽 ✏️ · ' + (st.postits || []).length + '개</h2>' +
+    '<div class="grid">' + (wall || '<div class="sub">아직 밑줄이 없습니다</div>') + '</div>' +
+    '<div class="hintline">논제의 씨앗(밑줄)이 충분히 모이면 [2단계 논제]를 여세요.<br>' +
+    '🎤 <b>"반이 갈릴 것 같은 문장, 마음에 걸린 문장, 작가는 왜 이렇게 썼을까 싶은 부분에 밑줄을 긋고 문단 번호와 함께 옮겨 적으세요."</b></div></div>');
+}
+
+function renderTopicBoard() {
+  var st = T.state;
+  var submitted = {};
+  (st.topics || []).forEach(function (t) { submitted[t.author] = (submitted[t.author] || 0) + 1; });
+  var missing = st.students.filter(function (n) { return !submitted[n]; });
+  var list = (st.topics || []).map(function (t) {
+    return '<div class="topic-row"><div class="who">' + esc(t.author) + '</div>' +
+      '<div>' + esc(t.text) +
+      '<span class="chip frame">' + esc(t.frame) + '</span>' +
+      (t.warnAnd ? '<span class="chip warn">그리고·그런데</span>' : '') +
+      '</div></div>';
+  }).join('');
+  app(header_() +
+    '<div class="card"><h2>논제 제출 현황 ✍️ · ' + (st.topics || []).length + '개 / 제출자 ' +
+    Object.keys(submitted).length + '·' + st.students.length + '명</h2>' +
+    (missing.length ? '<div class="sub">미제출: ' + missing.map(esc).join(', ') + '</div>' : '') +
+    (list || '<div class="sub" style="margin-top:12px">아직 제출된 논제가 없습니다</div>') +
+    '<div class="hintline">전원이 최소 1개를 제출하면 [투표 시작]을 누르세요. 모든 논제가 투표판에 오릅니다.<br>' +
+    '🎤 <b>"밑줄 그은 문장 중 하나를 골라 논제 한 문장으로 만드세요. 주어는 인물도, 작가도, 제목도 될 수 있어요. 막막하면 ⚠수리 탭에서 시작하세요."</b></div></div>');
+}
+
+function renderVoteProgress() {
+  var st = T.state;
+  var voted = st.voted || [];
+  var waiting = st.students.filter(function (n) { return voted.indexOf(n) < 0; });
+  app(header_() +
+    '<div class="card"><div class="big-wait"><div class="n">' + voted.length + ' / ' + st.students.length + '</div>' +
+    '<h2>투표 완료</h2></div>' +
+    (waiting.length ? '<div class="sub" style="text-align:center">아직: ' + waiting.map(esc).join(', ') + '</div>' : '') +
+    '<div class="hintline">집계는 학생 화면에 보이지 않습니다. 전원이 완료되면 [투표 종료 · 결과]를 누르세요.<br>' +
+    '🎤 <b>"토론하고 싶은 논제에 별을 붙이고, 모든 논제에 솔직한 찬성·반대를 누르세요. 결과는 아무도 못 봅니다."</b></div></div>');
+}
+
+/* ───────── 결과 ───────── */
+var MEDALS = ['🥇', '🥈', '🥉', '4위', '5위'];
+
+function renderResults(isFinal) {
+  if (T.resultsRendered) return; // 공개 상태 유지를 위해 재렌더 방지
+  T.resultsRendered = true;
+  var list = T.state.results || [];
+  if (isFinal) {
+    // 최종 발표 화면에서는 선정작의 작성자를 자동 공개
+    list.forEach(function (t) { if (t.final) T.revealed[t.id] = true; });
+  }
+  var cards = list.map(function (t, i) {
+    var tot = t.pro + t.con;
+    var proPct = tot ? Math.round(t.pro / tot * 100) : 0;
+    var medal = i < 5 ? MEDALS[i] : (i + 1) + '위';
+    var revealed = T.revealed[t.id];
+    var pickedChk = t.final || T.picked[t.id];
+    var cls = 'rank-card' + (i < 5 ? ' top' : '') + (isFinal && t.final ? ' chosen' : '');
+    return '<div class="' + cls + '" onclick="reveal(\'' + t.id + '\')">' +
+      (isFinal && t.final ? '<div class="medal">✔</div>' : '') +
+      (isFinal ? '' :
+        '<input type="checkbox" class="pick" ' + (pickedChk ? 'checked' : '') +
+        ' onclick="event.stopPropagation();pick(\'' + t.id + '\', this.checked)">') +
+      '<div class="medal">' + medal + '</div>' +
+      '<div class="body"><div class="t">' + esc(t.text) +
+      '<span class="author-reveal' + (revealed ? ' show' : '') + '" id="au-' + t.id + '">✍️ ' + esc(t.author) + '</span></div>' +
+      '<div class="meta">찬성 ' + t.pro + ' vs 반대 ' + t.con +
+      (t.close ? '<span class="chip close">🔥 접전 — 토론 가치!</span>' : '') +
+      '<button class="ro-btn" onclick="event.stopPropagation();toggleRoster(\'' + t.id + '\')">👥 찬반 명단</button></div>' +
+      '<div class="bar"><div class="pro" style="width:' + proPct + '%"></div></div>' +
+      '<div class="roster" id="ro-' + t.id + '" style="display:' + ((isFinal && t.final) ? 'flex' : 'none') + '">' +
+      '<div class="ro-col pro-col"><b>찬성 ' + t.pro + '명</b>' +
+      ((t.proNames && t.proNames.length) ? t.proNames.map(esc).join(', ') : '<span class="sub">없음</span>') + '</div>' +
+      '<div class="ro-col con-col"><b>반대 ' + t.con + '명</b>' +
+      ((t.conNames && t.conNames.length) ? t.conNames.map(esc).join(', ') : '<span class="sub">없음</span>') + '</div>' +
+      '</div></div>' +
+      '<div class="stars">⭐ ' + t.stars + '</div></div>';
+  }).join('');
+  app(header_() +
+    '<h2 style="margin-top:20px">' + (isFinal ? '🏆 최종 논제 발표 완료' : '투표 결과 — 카드를 클릭하면 작성자가 공개됩니다') + '</h2>' +
+    (cards || '<div class="sub">결과가 없습니다</div>') +
+    (isFinal ?
+      '<div class="hintline">선정작 아래 <b>찬반 명단</b>이 곧 모둠 편성 자료입니다. 찬성 명단에서 찬성 팀을, ' +
+      '반대 명단에서 반대 팀을 꾸리세요. 다른 논제의 명단도 [👥 찬반 명단]으로 열 수 있습니다.</div>' +
+      '<h2 style="margin-top:24px">토론 카드 보드 🃏 <span class="sub" id="dc-count"></span></h2>' +
+      '<div id="debate-board"><div class="sub">학생들이 카드를 제출하면 여기 실시간으로 쌓입니다</div></div>' :
+      '<div class="hintline">별 순위가 전부는 아닙니다 — <b>🔥 접전</b> 논제는 찬반이 팽팽해 토론 가치가 높습니다. ' +
+      '협의로 골라 체크한 뒤 아래 버튼을 누르세요. [👥 찬반 명단]으로 논제별 입장 분포도 확인할 수 있습니다.</div>' +
+      '<button class="btn" onclick="confirmFinal()">✔ 체크한 논제를 최종 확정하고 학생 화면에 발표</button>'));
+}
+
+function reveal(id) {
+  T.revealed[id] = !T.revealed[id];
+  var el = $('au-' + id);
+  if (el) el.classList.toggle('show', T.revealed[id]);
+}
+function toggleRoster(id) {
+  var el = $('ro-' + id);
+  if (el) el.style.display = (el.style.display === 'none') ? 'flex' : 'none';
+}
+function pick(id, on) { T.picked[id] = on; }
+
+function confirmFinal() {
+  var ids = Object.keys(T.picked).filter(function (k) { return T.picked[k]; });
+  if (!ids.length) return alert('최종 논제를 하나 이상 체크하세요.');
+  if (!confirm(ids.length + '개 논제를 최종 확정하고 학생 화면에 발표할까요?')) return;
+  run(function () { T.resultsRendered = false; fetchState(); })
+    .setFinal(T.pin, T.code, ids);
+}
+
+/* ───────── 시작 ───────── */
+renderLogin();
+</script>
+
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+  setTimeout(function () {
+    T.pin = 'demo'; T.code = '1234'; T.work = window.__MOCK.session.work;
+    startPoll();
+  }, 300);
+});
+</script>
+</body>
+</html>
