@@ -183,6 +183,20 @@
       { topicId: 'T1', stance: '반대', members: '문지유, 서지호, 오하람, 전민재, 배소미',
         text: '저희는 이 논제에 반대합니다. 너의 고양이 사랑은 진심이 아니라, 진심처럼 보이는 취향입니다.\n\n첫째, 너의 사랑은 사람을 지우는 자리에서만 작동합니다. 79번 문단, 빈집의 고양이를 걱정하던 바로 그 입으로 너는 3구역 사람들이 다 군말 없이 빨리 나가주면 좋겠다고 말합니다. 고양이를 향한 다정과 사람을 밀어내는 냉담이 한 호흡입니다.\n\n둘째, 58번 문단에서 너는 아무것도 모르는 고양이들만 불쌍하다고 말합니다. 값을 치르지 않아도 되는 대상만 골라 사랑하는 것, 그것은 사랑이 아니라 취미입니다.\n\n[반론] 상대측은 120만 원 앞의 무표정을 진심의 증거라 했습니다. 하지만 그것은 진심의 증거가 아니라 여유의 증거입니다. 분양권 차익을 올린 사람에게 120만 원은 시험이 되지 못하므로, 흔들리지 않았다는 사실은 아무것도 증명하지 못합니다.\n\n또한 상대측은 빈집에서의 필사적임을 들었습니다. 필사적인 것은 사실입니다. 하지만 그 수색의 마지막에 나온 말이 무엇이었는지 기억해 주십시오. 3구역 사람들이 빨리 나가주면 좋겠다는 말이었습니다. 그 필사적임이 무엇과 나란히 놓여 있는지를 보면, 저희는 그것을 진심이라 부르기 어렵습니다. 그래서 저희는 반대합니다.' }
     ],
+    rcards: [
+      { author: '강민서', kind: '작품과 나', body: '나도 누군가의 호의를 받으면 의도부터 의심하게 될 때가 있다. 이 소설의 나처럼, 의심하면서도 자꾸 이끌리는 마음이 무엇인지 알 것 같았다.' },
+      { author: '강민서', kind: '작품과 세상', body: '뉴스에서 재개발 기사를 볼 때 나는 아파트값 이야기만 들었다. 이제는 그 골목에 살던 사람들과 고양이들이 먼저 떠오를 것 같다.' },
+      { author: '강민서', kind: '생각의 변화', body: '토론 전에는 너의 사랑이 가짜라고 생각했다. 상대편의 "모순과 거짓은 다르다"는 반론을 듣고, 사람을 한 단어로 판정할 수 없다는 걸 배웠다.' },
+      { author: '김하늘', kind: '작품과 나', body: '누군가를 다 안다고 생각했다가 놀란 적이 나에게도 있다.' },
+      { author: '문지유', kind: '작품과 세상', body: '선의와 이익이 한 사람 안에 함께 있는 경우를 주변에서도 본다.' }
+    ],
+    reflections: [
+      { author: '강민서', text: '나도 누군가의 호의를 받으면 의도부터 의심하게 될 때가 있다. 이 소설의 나처럼, 의심하면서도 자꾸 이끌리는 마음이 무엇인지 이제 조금 알 것 같다.\n\n토론 전에는 너의 사랑이 가짜라고 생각했다. 하지만 상대편의 "모순과 거짓은 다르다"는 반론을 듣고 나서, 사람을 한 단어로 판정할 수 없다는 것을 배웠다. 좋은 사람과 나쁜 사람이 있는 게 아니라, 한 사람 안에 여러 얼굴이 있는 것이다.\n\n이제 뉴스에서 재개발 기사를 보면 아파트값보다 그 골목에 살던 사람들과 고양이들이 먼저 떠오를 것 같다. 소설 하나가 뉴스 보는 눈을 바꿔 놓았다.' },
+      { author: '김하늘', text: '토론을 하면서 같은 문단을 전혀 다르게 읽는 친구들을 보았다. 내가 읽은 것이 전부가 아니라는 걸 알게 됐다.' },
+      { author: '문지유', text: '반대편의 근거를 듣고도 내 생각이 바뀌지 않은 것이 오히려 신기했다. 왜 안 바뀌는지를 설명하려다 보니 내 생각이 더 분명해졌다.' },
+      { author: '박준우', text: '문단 번호를 대면서 말하니까 말싸움이 아니라 책 이야기가 됐다.' },
+      { author: '서지호', text: '나는 별을 준 논제가 뽑히지 않아 아쉬웠지만, 뽑힌 논제로 토론해 보니 왜 다들 그 논제를 골랐는지 알게 되었다.' }
+    ],
     debateCards: [
       { topicId: 'T1', author: '박서연', kind: '입론', para: '36', stance: '찬성',
         body: '너는 오지 않는 태비에게서 시선을 떼지 못합니다',
@@ -371,6 +385,65 @@
       });
       return found ? { text: found.text, members: found.members } : null;
     },
+    submitReflectCard: function (code, name, kind, body) {
+      if (!String(body || '').trim()) throw new Error('내용을 적어 주세요.');
+      M.rcards.push({ author: name, kind: kind || '자유', body: body });
+      return { ok: true };
+    },
+    getReflectHome: function (code, name) {
+      var cards = M.rcards.filter(function (c) { return c.author === name; })
+        .map(function (c) { return { kind: c.kind, body: c.body }; });
+      var text = null;
+      M.reflections.forEach(function (r) { if (r.author === name) text = r.text; });
+      return { myCards: cards, myText: text };
+    },
+    saveReflection: function (code, name, text) {
+      if (!String(text || '').trim()) throw new Error('소감문이 비어 있습니다.');
+      M.reflections = M.reflections.filter(function (r) { return r.author !== name; });
+      M.reflections.push({ author: name, text: text });
+      return { ok: true };
+    },
+    getStudentReport: function (pin, code, name) { return API.__report(name); },
+    getAllReports: function (pin, code) {
+      return M.students.map(function (n) { return API.__report(n); });
+    },
+    __report: function (name) {
+      var nt = function (x) { return String(x || '').replace(/\s+/g, ''); };
+      var hasMember = function (members, nm) {
+        return String(members || '').split(',').some(function (m) { return nt(m) === nt(nm); });
+      };
+      var results = computeResults();
+      var rep = {
+        name: name, work: M.session.work,
+        postits: M.postits.filter(function (p) { return p.author === name; })
+          .map(function (p) { return { phrase: p.phrase, comment: p.comment, para: p.para }; }),
+        topics: results.filter(function (t) { return t.author === name; })
+          .map(function (t) { return { text: t.text, stars: t.stars, pro: t.pro, con: t.con, final: t.final }; }),
+        team: null,
+        reflectCards: M.rcards.filter(function (c) { return c.author === name; })
+          .map(function (c) { return { kind: c.kind, body: c.body }; }),
+        reflection: ''
+      };
+      M.reflections.forEach(function (r) { if (r.author === name) rep.reflection = r.text; });
+      var teamCards = M.debateCards.filter(function (c) {
+        return c.author === name || hasMember(c.members, name);
+      });
+      if (teamCards.length) {
+        var first = teamCards[0];
+        var topicText = '';
+        results.forEach(function (t) { if (String(t.id) === String(first.topicId)) topicText = t.text; });
+        rep.team = { topic: topicText, stance: first.stance || '', members: first.members || '',
+          cards: teamCards.map(function (c) {
+            return { kind: c.kind, para: c.para, body: c.body, quote: c.quote, interp: c.interp, author: c.author };
+          }),
+          speech: '' };
+        (M.speeches || []).forEach(function (sp) {
+          if (String(sp.topicId) === String(first.topicId) && sp.stance === (first.stance || '') &&
+              hasMember(sp.members, name)) rep.team.speech = sp.text;
+        });
+      }
+      return rep;
+    },
     getDebateHome: function (code, name) {
       var topics = computeResults().filter(function (t) { return t.final; });
       var mine = M.debateCards.filter(function (c) { return c.author === name; })
@@ -409,6 +482,12 @@
       }
       if (M.phase === 'RESULT' || M.phase === 'FINAL') st.results = computeResults();
       if (M.phase === 'FINAL') { st.debateCards = M.debateCards.slice(); st.speeches = (M.speeches || []).slice(); }
+      if (M.phase === 'REFLECT') {
+        var rd = {};
+        M.reflections.forEach(function (r) { rd[r.author] = true; });
+        st.reflected = Object.keys(rd);
+        st.rcardCount = M.rcards.length;
+      }
       return st;
     }
   };
@@ -436,7 +515,7 @@
       'padding:8px 10px;border-radius:10px;font-size:12px;opacity:.92';
     bar.innerHTML = '<b>시연 단계</b>: ' + [
       ['POSTIT', '1.밑줄'], ['TOPIC', '2.논제'], ['VOTE', '3.투표'],
-      ['RESULT', '4.결과'], ['FINAL', '5.토론']
+      ['RESULT', '4.결과'], ['FINAL', '5.토론'], ['REFLECT', '6.소감']
     ].map(function (p) {
       return '<button style="margin:2px;font-size:12px;padding:3px 8px;border-radius:6px;border:none;cursor:pointer" ' +
         'onclick="window.__MOCK.phase=\'' + p[0] + '\'">' + p[1] + '</button>';
@@ -521,6 +600,7 @@ function onPhase() {
     case 'VOTE':   return loadBallot();
     case 'RESULT': return renderResultWait();
     case 'FINAL':  return loadFinal();
+    case 'REFLECT': return loadReflect();
     default:       return renderWait();
   }
 }
@@ -1048,6 +1128,98 @@ function sendDebateCard() {
   .submitDebateCard(S.code, S.name, payload);
 }
 
+/* ───────── 토론 후: 개인 소감 (개인 활동) ───────── */
+var REFLECT_KINDS = ['작품과 나', '작품과 세상', '생각의 변화', '자유'];
+var REFLECT_PH = {
+  '작품과 나': '예) 나도 누군가의 호의를 받으면 의도부터 의심하게 될 때가 있다…',
+  '작품과 세상': '예) 뉴스에서 본 일들이 이 소설을 읽고 나니 다르게 보인다…',
+  '생각의 변화': '예) 토론 전에는 …라고 생각했는데, 상대편의 …라는 말을 듣고 …',
+  '자유': '떠오르는 생각을 자유롭게 적어 보세요'
+};
+
+function loadReflect() {
+  app(head_() + '<div class="wait-box"><div class="big">🌱</div>불러오는 중...</div>');
+  run(function (res) {
+    S.reflect = { myCards: res.myCards, myText: res.myText,
+                  kind: (S.reflect && S.reflect.kind) || '작품과 나' };
+    renderReflect();
+  }).getReflectHome(S.code, S.name);
+}
+
+function renderReflect() {
+  var r = S.reflect;
+  app(head_() +
+    banner_('토론 후 · 나의 생각 쓰기 🌱 (개인 활동)') +
+    '<div class="card">' +
+    '<div class="sub"><b>책에 머물지 않아도 됩니다.</b> 작품과 나의 경험, 작품과 세상, ' +
+    '토론이 바꾼 내 생각 — 무엇이든 좋습니다. 짧은 카드 여러 장을 쓰고, 마지막에 한 편으로 정리하세요.</div>' +
+    '<div class="tabs">' +
+    REFLECT_KINDS.map(function (k) {
+      return '<button class="tab' + (r.kind === k ? ' on' : '') +
+        '" onclick="S.reflect.kind=\'' + k + '\';renderReflect()">' + k + '</button>';
+    }).join('') + '</div>' +
+    '<label>' + esc(r.kind) + '</label>' +
+    '<textarea id="r-body" placeholder="' + esc(REFLECT_PH[r.kind]) + '"></textarea>' +
+    '<button class="btn" onclick="sendReflectCard()">소감 카드 제출</button>' +
+    (r.myCards.length ?
+      '<div class="mine-list"><b>내가 낸 소감 카드</b><ul>' +
+      r.myCards.map(function (c) {
+        return '<li>[' + esc(c.kind) + '] ' + esc(c.body) + '</li>';
+      }).join('') + '</ul></div>' : '') +
+    '<button class="btn-ghost" onclick="renderReflectEditor()">📝 내 소감문 정리하기</button>' +
+    '</div>');
+}
+
+function sendReflectCard() {
+  var body = $('r-body').value.trim();
+  if (!body) return alert('내용을 적어 주세요.');
+  var btn = document.querySelector('.card .btn');
+  if (btn) btn.disabled = true;
+  run(function () {
+    S.reflect.myCards.push({ kind: S.reflect.kind, body: body });
+    renderReflect();
+  }, function (e) { if (btn) btn.disabled = false; alert(e.message || e); })
+  .submitReflectCard(S.code, S.name, S.reflect.kind, body);
+}
+
+function reflectDraft_() {
+  return S.reflect.myCards.map(function (c) { return c.body; }).join('\n\n');
+}
+
+function renderReflectEditor() {
+  app(head_() +
+    banner_('📝 나의 최종 소감문 — 다듬어서 저장하세요') +
+    '<div class="card">' +
+    '<div class="sub">카드로 만든 초안이 채워져 있습니다. 내 글로 자연스럽게 다듬고 <b>[소감문 저장]</b>을 누르세요.</div>' +
+    '<textarea id="rf-text" style="min-height:340px;margin-top:12px;' +
+    "font-family:'Gowun Batang',serif;font-size:16px;line-height:1.8\" " +
+    'placeholder="소감 카드를 먼저 쓰면 초안이 자동으로 만들어집니다"></textarea>' +
+    '<button class="btn" onclick="saveReflectionNow()">소감문 저장</button>' +
+    '<button class="btn-ghost" onclick="refillReflect()">↺ 카드로 초안 다시 만들기</button>' +
+    '<button class="btn-ghost" onclick="renderReflect()">← 카드 화면으로 돌아가기</button>' +
+    '</div>');
+  window.scrollTo(0, 0);
+  $('rf-text').value = (S.reflect.myText != null && S.reflect.myText !== '')
+    ? S.reflect.myText : reflectDraft_();
+}
+
+function refillReflect() {
+  if (!confirm('지금 쓴 내용을 지우고 카드 초안으로 다시 채울까요?')) return;
+  $('rf-text').value = reflectDraft_();
+}
+
+function saveReflectionNow() {
+  var t = $('rf-text').value.trim();
+  if (!t) return alert('소감문이 비어 있습니다.');
+  var btn = document.querySelector('.card .btn');
+  if (btn) btn.disabled = true;
+  run(function () {
+    S.reflect.myText = t;
+    if (btn) { btn.disabled = false; btn.textContent = '저장됨 ✓ (다시 저장 가능)'; }
+  }, function (e) { if (btn) btn.disabled = false; alert(e.message || e); })
+  .saveReflection(S.code, S.name, t);
+}
+
 /* ───────── 시작 ───────── */
 renderJoin();
 </script>
@@ -1063,7 +1235,7 @@ window.addEventListener('DOMContentLoaded', function () {
     join();
   }, 400);
 
-  var done = { postit: false, topic: false, vote: false, debate: false };
+  var done = { postit: false, topic: false, vote: false, debate: false, reflect: false };
   setInterval(function () {
     try {
       if (S.phase === 'POSTIT' && !done.postit && document.getElementById('p-phrase')) {
@@ -1110,6 +1282,10 @@ window.addEventListener('DOMContentLoaded', function () {
             var el = document.getElementById(id); if (el) el.value = f[id];
           });
         }, 250);
+      }
+      if (S.phase === 'REFLECT' && S.reflect && !done.reflect && document.getElementById('r-body')) {
+        done.reflect = true;
+        document.getElementById('r-body').value = '토론이 끝났는데도 너라는 사람이 계속 생각난다. 다 알 수 없는 사람을 다 알 수 없는 채로 이해하는 것, 그게 이 소설이 시키는 일 같다.';
       }
     } catch (e) {}
   }, 700);
