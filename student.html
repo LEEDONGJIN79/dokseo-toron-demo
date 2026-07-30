@@ -483,10 +483,9 @@
       if (M.phase === 'RESULT' || M.phase === 'FINAL') st.results = computeResults();
       if (M.phase === 'FINAL') { st.debateCards = M.debateCards.slice(); st.speeches = (M.speeches || []).slice(); }
       if (M.phase === 'REFLECT') {
-        var rd = {};
-        M.reflections.forEach(function (r) { rd[r.author] = true; });
-        st.reflected = Object.keys(rd);
-        st.rcardCount = M.rcards.length;
+        st.rcards = M.rcards.slice();
+        st.reflections = M.reflections.slice();
+        st.reflected = M.reflections.map(function (r) { return r.author; });
       }
       return st;
     }

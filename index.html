@@ -489,10 +489,9 @@
       if (M.phase === 'RESULT' || M.phase === 'FINAL') st.results = computeResults();
       if (M.phase === 'FINAL') { st.debateCards = M.debateCards.slice(); st.speeches = (M.speeches || []).slice(); }
       if (M.phase === 'REFLECT') {
-        var rd = {};
-        M.reflections.forEach(function (r) { rd[r.author] = true; });
-        st.reflected = Object.keys(rd);
-        st.rcardCount = M.rcards.length;
+        st.rcards = M.rcards.slice();
+        st.reflections = M.reflections.slice();
+        st.reflected = M.reflections.map(function (r) { return r.author; });
       }
       return st;
     }
@@ -875,17 +874,25 @@ function confirmFinal() {
 function renderReflectT() {
   var st = T.state;
   var done = st.reflected || [];
+  var rcards = st.rcards || [];
   var waiting = st.students.filter(function (n) { return done.indexOf(n) < 0; });
   var opts = st.students.map(function (n) {
     return '<option value="' + esc(n) + '">' + esc(n) + '</option>';
   }).join('');
+  var wall = rcards.map(function (c, i) {
+    return '<div class="postit" style="background:' + POSTIT_COLORS[i % 5] + '">' +
+      '<b>[' + esc(c.kind) + ']</b> ' + esc(c.body) +
+      '<div class="who">' + esc(c.author) + '</div></div>';
+  }).join('');
   app(header_() +
     '<div class="card"><h2>개인 소감 쓰기 🌱 · 소감문 ' + done.length + '/' + st.students.length + '명 제출</h2>' +
-    '<div class="sub">소감 카드 ' + (st.rcardCount || 0) + '장 제출됨</div>' +
     (waiting.length ? '<div class="sub" style="margin-top:8px">아직: ' + waiting.map(esc).join(', ') + '</div>' : '') +
     '<div class="hintline">개인 활동입니다. 소감 카드를 쓰고 마지막에 한 편의 소감문으로 정리하게 하세요.<br>' +
     '🎤 <b>"이제 혼자 씁니다. 책에 머물지 않아도 됩니다 — 작품과 나, 작품과 세상, 토론이 바꾼 생각. ' +
     '카드 몇 장을 쓰고, 마지막에 [소감문 정리하기]로 한 편을 완성하세요."</b></div></div>' +
+    '<div class="card"><h2>소감 카드 벽 🌱 · ' + rcards.length + '장</h2>' +
+    '<div class="grid">' + (wall || '<div class="sub">아직 소감 카드가 없습니다</div>') + '</div>' +
+    '<button class="btn" onclick="openReflections()">🌱 소감문 전체 보기 (새 창)</button></div>' +
     '<div class="card"><h2>학생별 결과물 📄</h2>' +
     '<div class="sub">밑줄 → 논제 → 모둠 토론(입론·반론·발표문) → 소감문이 학생 한 명 기준으로 묶입니다. ' +
     '열린 화면에서 [🖨 인쇄]를 누르면 PDF로 저장됩니다.</div>' +
@@ -980,6 +987,42 @@ function buildReportHtml_(rep) {
   }
   h += '</div></body></html>';
   return h;
+}
+
+function openReflections() {
+  var list = T.state.reflections || [];
+  if (!list.length) return alert('아직 제출된 소감문이 없습니다.');
+  var e = repEsc_;
+  var h = '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">' +
+    '<title>우리 반 소감문 · ' + e(T.work) + '</title>' +
+    '<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">' +
+    '<style>@page{size:A4;margin:14mm}*{box-sizing:border-box;margin:0;padding:0}' +
+    "body{font-family:'Noto Sans KR',sans-serif;color:#3d3529;background:#faf6ef;line-height:1.8}" +
+    '.sheet{max-width:760px;margin:0 auto;padding:34px 26px}' +
+    "h1{font-family:'Gowun Batang',serif;font-size:24px}" +
+    '.sub{color:#8a7f6d;font-size:13px}' +
+    '.box{background:#fffdf8;border:1px solid #e8dfd0;border-radius:12px;padding:16px 18px;' +
+    'margin-top:14px;page-break-inside:avoid}' +
+    '.box h2{font-family:"Gowun Batang",serif;font-size:16px;color:#c26d4f;margin-bottom:6px}' +
+    '.box p{font-family:"Gowun Batang",serif;font-size:14.5px;margin-bottom:8px}' +
+    '.print-btn{position:fixed;top:14px;right:14px;padding:10px 18px;background:#c26d4f;' +
+    'color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer}' +
+    '@media print{.print-btn{display:none}body{background:#fff}}' +
+    '</style></head><body>' +
+    '<button class="print-btn" onclick="window.print()">🖨 인쇄 (PDF 저장)</button>' +
+    '<div class="sheet"><h1>우리 반 소감문 🌱</h1>' +
+    '<div class="sub">「' + e(T.work) + '」 · ' + list.length + '명</div>' +
+    list.map(function (r) {
+      return '<div class="box"><h2>' + e(r.author) + '</h2>' +
+        String(r.text).split(/\n+/).map(function (line) {
+          return line.trim() ? '<p>' + e(line.trim()) + '</p>' : '';
+        }).join('') + '</div>';
+    }).join('') +
+    '</div></body></html>';
+  var w = window.open('', '_blank');
+  if (!w) return alert('팝업이 차단되었습니다. 팝업을 허용해 주세요.');
+  w.document.write(h);
+  w.document.close();
 }
 
 function openReport() {
